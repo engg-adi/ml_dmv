@@ -1,0 +1,129 @@
+
+# 1. Import library
+import numpy as np
+import random
+
+# 2. Define Tic-Tac-Toe Environment
+class TicTacToe:
+    def __init__(self):
+        self.board = [0] * 9
+
+    def reset(self):
+        self.board = [0] * 9
+
+    def available_moves(self):
+        return [i for i in range(9) if self.board[i] == 0]
+
+    def check_win(self, player):
+        wins = [(0,1,2), (3,4,5), (6,7,8),
+                (0,3,6), (1,4,7), (2,5,8),
+                (0,4,8), (2,4,6)]
+
+        return any(all(self.board[i] == player for i in w)
+                   for w in wins)
+
+
+# 3. Define Q-Learning Agent
+class Agent:
+    def __init__(self):
+        self.q = {}
+        self.lr = 0.1
+        self.gamma = 0.9
+        self.epsilon = 0.2
+
+    def choose_action(self, state, moves):
+        if random.random() < self.epsilon:
+            return random.choice(moves)
+
+        values = [self.q.get((state, a), 0) for a in moves]
+        return moves[np.argmax(values)]
+
+    def update(self, state, action, reward, next_state=None, moves=None):
+        old = self.q.get((state, action), 0)
+
+        future = 0
+        if next_state is not None and moves:
+            future = max(self.q.get((next_state, a), 0) for a in moves)
+
+        self.q[(state, action)] = old + self.lr * (
+            reward + self.gamma * future - old
+        )
+
+
+# 4. Train the Agent
+env = TicTacToe()
+agent = Agent()
+
+for episode in range(10000):
+    env.reset()
+
+    while True:
+        state = tuple(env.board)
+        moves = env.available_moves()
+        action = agent.choose_action(state, moves)
+
+        env.board[action] = 1
+
+        if env.check_win(1):
+            agent.update(state, action, 10)
+            break
+
+        if not env.available_moves():
+            agent.update(state, action, 0)
+            break
+
+        # Opponent move
+        opponent = random.choice(env.available_moves())
+        env.board[opponent] = -1
+
+        if env.check_win(-1):
+            agent.update(state, action, -10)
+            break
+
+        next_state = tuple(env.board)
+        next_moves = env.available_moves()
+
+        agent.update(state, action, 0, next_state, next_moves)
+
+print("Training Completed!")
+
+
+# 5. Test the Agent
+env.reset()
+
+while True:
+    print("\nBoard:")
+    for i in range(0, 9, 3):
+        print(env.board[i:i+3])
+
+    moves = env.available_moves()
+
+    if not moves:
+        print("Draw!")
+        break
+
+    state = tuple(env.board)
+    action = agent.choose_action(state, moves)
+    env.board[action] = 1
+
+    if env.check_win(1):
+        print("AI Wins!")
+        break
+
+    if not env.available_moves():
+        print("Draw!")
+        break
+
+    print("\nAvailable positions:", env.available_moves())
+    move = int(input("Enter your move (0-8): "))
+
+    if move not in env.available_moves():
+        print("Invalid move! Try again.")
+        env.board[action] = 0
+        continue
+
+    env.board[move] = -1
+
+    if env.check_win(-1):
+        print("You Win!")
+        break

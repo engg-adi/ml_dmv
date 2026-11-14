@@ -1,0 +1,86 @@
+# 1. Import required libraries
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# 2. Explore the dataset
+df = pd.read_csv("retail_sales_dataset.csv")
+
+print("First 5 Records:")
+print(df.head())
+
+print("\nDataset Shape:")
+print(df.shape)
+
+print("\nColumn Names:")
+print(df.columns.tolist())
+
+print("\nDataset Information:")
+df.info()
+
+# 3. Identify relevant variables
+df.columns = (
+    df.columns.str.strip()
+    .str.lower()
+    .str.replace(" ", "_")
+)
+
+print("\nRelevant Variables:")
+print(df[["product_category", "total_amount"]].head())
+
+# 4. Group sales by product category
+category_sales = df.groupby("product_category")["total_amount"].sum()
+
+print("\nTotal Sales by Product Category:")
+print(category_sales)
+
+# 5. Visualize sales distribution using bar chart
+plt.figure(figsize=(8, 5))
+category_sales.plot(kind="bar", color="skyblue")
+plt.title("Total Sales by Product Category")
+plt.xlabel("Product Category")
+plt.ylabel("Total Sales Amount")
+plt.xticks(rotation=0)
+plt.show()
+
+# Pie chart
+plt.figure(figsize=(7, 7))
+category_sales.plot(kind="pie", autopct="%1.1f%%")
+plt.title("Sales Distribution by Product Category")
+plt.ylabel("")
+plt.show()
+
+# 6. Identify top-performing category
+top_category = category_sales.idxmax()
+top_sales = category_sales.max()
+
+print("\nTop Performing Category:", top_category)
+print("Highest Sales Amount:", top_sales)
+
+# 7. Group sales by Gender and Product Category
+grouped_sales = df.groupby(
+    ["gender", "product_category"]
+)["total_amount"].sum().unstack()
+
+print("\nSales by Gender and Product Category:")
+print(grouped_sales)
+
+# 8. Create grouped bar chart
+grouped_sales.plot(kind="bar", figsize=(9, 5))
+
+plt.title("Grouped Sales by Gender and Product Category")
+plt.xlabel("Product Category")
+plt.ylabel("Total Sales Amount")
+plt.xticks(rotation=0)
+plt.legend(title="Gender")
+plt.show()
+
+# Stacked bar chart
+grouped_sales.plot(kind="bar", stacked=True, figsize=(9, 5))
+
+plt.title("Stacked Sales by Gender and Product Category")
+plt.xlabel("Product Category")
+plt.ylabel("Total Sales Amount")
+plt.xticks(rotation=0)
+plt.legend(title="Gender")
+plt.show()
