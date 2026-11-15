@@ -1,10 +1,11 @@
+
 # 1. Import required libraries
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# 2. Explore the dataset
-df = pd.read_csv("retail_sales_dataset.csv")
+# 2. Load and explore the dataset
+df = pd.read_csv("Superstore.csv")
 
 print("First 5 Records:")
 print(df.head())
@@ -19,68 +20,77 @@ print("\nDataset Information:")
 df.info()
 
 # 3. Identify relevant variables
-df.columns = (
-    df.columns.str.strip()
-    .str.lower()
-    .str.replace(" ", "_")
-)
-
 print("\nRelevant Variables:")
-print(df[["product_category", "total_amount"]].head())
+print(df[["Region", "Sales", "Category"]].head())
 
-# 4. Group sales by product category
-category_sales = df.groupby("product_category")["total_amount"].sum()
+# 4. Group sales by Region and calculate total sales
+region_sales = df.groupby("Region")["Sales"].sum()
 
-print("\nTotal Sales by Product Category:")
-print(category_sales)
+print("\nTotal Sales by Region:")
+print(region_sales)
 
-# 5. Visualize sales distribution using bar chart
+# 5. Visualize sales distribution using Bar Chart
 plt.figure(figsize=(8, 5))
-category_sales.plot(kind="bar", color="skyblue")
-plt.title("Total Sales by Product Category")
-plt.xlabel("Product Category")
+region_sales.plot(kind="bar", color="skyblue")
+
+plt.title("Total Sales by Region")
+plt.xlabel("Region")
 plt.ylabel("Total Sales Amount")
 plt.xticks(rotation=0)
+plt.tight_layout()
 plt.show()
 
-# Pie chart
+# Pie Chart
 plt.figure(figsize=(7, 7))
-category_sales.plot(kind="pie", autopct="%1.1f%%")
-plt.title("Sales Distribution by Product Category")
+region_sales.plot(kind="pie", autopct="%1.1f%%")
+
+plt.title("Sales Distribution by Region")
 plt.ylabel("")
 plt.show()
 
-# 6. Identify top-performing category
-top_category = category_sales.idxmax()
-top_sales = category_sales.max()
+# 6. Identify top-performing region
+top_region = region_sales.idxmax()
+highest_sales = region_sales.max()
 
-print("\nTop Performing Category:", top_category)
-print("Highest Sales Amount:", top_sales)
+print("\nTop Performing Region:", top_region)
+print("Highest Sales Amount:", round(highest_sales, 2))
 
-# 7. Group sales by Gender and Product Category
-grouped_sales = df.groupby(
-    ["gender", "product_category"]
-)["total_amount"].sum().unstack()
+print("\nRegions Ranked by Sales:")
+print(region_sales.sort_values(ascending=False))
 
-print("\nSales by Gender and Product Category:")
-print(grouped_sales)
+# 7. Group sales by Region and Product Category
+region_category_sales = df.groupby(
+    ["Region", "Category"]
+)["Sales"].sum().unstack()
 
-# 8. Create grouped bar chart
-grouped_sales.plot(kind="bar", figsize=(9, 5))
+print("\nSales by Region and Product Category:")
+print(region_category_sales)
 
-plt.title("Grouped Sales by Gender and Product Category")
-plt.xlabel("Product Category")
+# 8. Create Grouped Bar Chart
+region_category_sales.plot(
+    kind="bar",
+    figsize=(10, 6)
+)
+
+plt.title("Region-wise Sales by Product Category")
+plt.xlabel("Region")
 plt.ylabel("Total Sales Amount")
 plt.xticks(rotation=0)
-plt.legend(title="Gender")
+plt.legend(title="Product Category")
+plt.tight_layout()
 plt.show()
 
-# Stacked bar chart
-grouped_sales.plot(kind="bar", stacked=True, figsize=(9, 5))
+# Create Stacked Bar Chart
+region_category_sales.plot(
+    kind="bar",
+    stacked=True,
+    figsize=(10, 6)
+)
 
-plt.title("Stacked Sales by Gender and Product Category")
-plt.xlabel("Product Category")
+plt.title("Stacked Sales by Region and Product Category")
+plt.xlabel("Region")
 plt.ylabel("Total Sales Amount")
 plt.xticks(rotation=0)
-plt.legend(title="Gender")
+plt.legend(title="Product Category")
+plt.tight_layout()
 plt.show()
